@@ -19,7 +19,7 @@ The world's most advanced, verbose, and integrated DNS debugging tool.
 ## Commands
 
 ```
-dnsgo query <target> [type] [--level short|long|detail|verbose|debug]
+dnsgo query <target> [type] [--level short|long|detail|verbose|debug] [--embedded-dns|-ed]
 dnsgo debug <trace|compare|propagation|delegation|latency>
 dnsgo mkpacket <query|response|update|notify>
 dnsgo makekey [--algorithm ECDSAP256SHA256|ED25519|...]
@@ -42,6 +42,12 @@ dnsgo science <scan|history|compare|search|analytics> [options]
 | `verbose` | Explanations, timing, DNSSEC analysis |
 | `debug` | Wire-level packet dumps with hex |
 
+## Global Flags
+
+| Flag | Description |
+|------|-------------|
+| `--embedded-dns`, `-ed` | Use dnsscience.io DNS caches (cache01-04.dnsscience.io) instead of system resolvers |
+
 ## Quick Examples
 
 ```bash
@@ -56,6 +62,9 @@ dnsgo debug trace example.com
 
 # Compare resolvers
 dnsgo debug compare example.com --resolvers 8.8.8.8,1.1.1.1,9.9.9.9
+
+# Use dnsscience.io embedded DNS caches
+dnsgo query example.com mx --embedded-dns
 
 # Analyze SPF record
 dnsgo spf get google.com --level verbose
@@ -152,3 +161,7 @@ MIT License - see [LICENSE](LICENSE)
 ## Contributing
 
 Contributions welcome. Please read the design document before submitting PRs.
+
+## Acknowledgments
+
+Thanks, Claude for debugging weird Go DNS API issues for DNSSEC.

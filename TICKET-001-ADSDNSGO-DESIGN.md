@@ -127,9 +127,38 @@ adsdnsgo/
 
 ---
 
-## 2. Command Reference
+## 2. Global Flags
 
-### 2.1 Query Command - `dnsgo query`
+These flags can be used with any command:
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--embedded-dns` | `-ed` | Use dnsscience.io DNS caches instead of system resolvers |
+| `--level` | `-l` | Output verbosity level (short/long/detail/verbose/debug) |
+| `--json` | `-j` | Output in JSON format |
+| `--no-color` | | Disable colored output |
+| `--config` | `-c` | Path to config file |
+
+### Embedded DNS (`--embedded-dns`, `-ed`)
+
+When enabled, queries use the dnsscience.io DNS cache infrastructure instead of system resolvers:
+
+- `cache01.dnsscience.io` (primary)
+- `cache02.dnsscience.io` (secondary)
+- `cache03.dnsscience.io` (tertiary)
+- `cache04.dnsscience.io` (quaternary)
+
+Benefits:
+- Consistent results across environments
+- Pre-warmed cache for faster responses
+- DNSSEC validation enabled by default
+- Query logging for debugging (when using API key)
+
+---
+
+## 3. Command Reference
+
+### 3.1 Query Command - `dnsgo query`
 
 The primary DNS lookup command with unprecedented detail levels.
 
@@ -168,6 +197,10 @@ dnsgo query example.com --server 8.8.8.8   # Use specific resolver
 dnsgo query example.com --tcp              # Force TCP
 dnsgo query example.com --timeout 10s      # Custom timeout
 dnsgo query example.com --retries 3        # Retry count
+
+# Embedded DNS - use dnsscience.io cache servers
+dnsgo query example.com --embedded-dns     # Use cache01-04.dnsscience.io
+dnsgo query example.com -ed                # Short form
 ```
 
 #### Query Output Levels
