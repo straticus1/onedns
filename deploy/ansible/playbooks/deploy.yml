@@ -1,0 +1,357 @@
+---
+# adsdnsgo - Ansible Deployment Playbook
+# Deploys the DNS debugging tool to OCI
+
+- name: Deploy adsdnsgo to OCI
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  vars:
+    app_dir: /opt/adsdnsgo
+    go_version: "1.21.5"
+    dnsscience_endpoint: "https://api.dnsscience.io"
+
+  tasks:
+    - name: Ensure required packages are installed
+      dnf:
+        name:
+          - git
+          - jq
+          - bind-utils
+          - python3
+          - python3-pip
+          - nginx
+          - docker
+          - docker-compose
+        state: present
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Add opc user to docker group
+      user:
+        name: opc
+        groups: docker
+        append: yes
+
+    - name: Install Go {{ go_version }}
+      unarchive:
+        src: "https://go.dev/dl/go{{ go_version }}.linux-arm64.tar.gz"
+        dest: /usr/local
+        remote_src: yes
+        creates: /usr/local/go/bin/go
+
+    - name: Add Go to PATH
+      copy:
+        dest: /etc/profile.d/go.sh
+        content: |
+          export PATH=$PATH:/usr/local/go/bin
+          export GOPATH=/home/opc/go
+          export PATH=$PATH:$GOPATH/bin
+        mode: '0644'
+
+    - name: Ensure application directories exist
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: opc
+        group: opc
+        mode: '0755'
+      loop:
+        - "{{ app_dir }}"
+        - "{{ app_dir }}/bin"
+        - "{{ app_dir }}/config"
+        - "{{ app_dir }}/logs"
+        - "{{ app_dir }}/data"
+        - "{{ app_dir }}/src"
+
+    - name: Clone adsdnsgo repository
+      git:
+        repo: https://github.com/straticus1/adsdnsgo.git
+        dest: "{{ app_dir }}/src"
+        version: main
+        force: yes
+      become_user: opc
+
+    - name: Initialize Go module
+      shell: |
+        export PATH=$PATH:/usr/local/go/bin
+        cd {{ app_dir }}/src
+        go mod init adsdnsgo 2>/dev/null || true
+        go get github.com/miekg/dns
+        go get github.com/spf13/cobra
+        go get github.com/spf13/viper
+        go mod tidy
+      become_user: opc
+      args:
+        chdir: "{{ app_dir }}/src"
+
+    - name: Deploy API configuration
+      template:
+        src: ../roles/adsdnsgo/templates/config.json.j2
+        dest: "{{ app_dir }}/config/config.json"
+        owner: opc
+        group: opc
+        mode: '0600'
+
+    - name: Deploy API key file
+      template:
+        src: ../roles/adsdnsgo/templates/api-credentials.json.j2
+        dest: "{{ app_dir }}/config/api-credentials.json"
+        owner: opc
+        group: opc
+        mode: '0600'
+
+    - name: Create API server script
+      copy:
+        dest: "{{ app_dir }}/bin/dnsgo-api"
+        mode: '0755'
+        owner: opc
+        group: opc
+        content: |
+          #!/bin/bash
+          # adsdnsgo API Server
+          # Simple HTTP API wrapper for DNS debugging
+
+          PORT=${1:-5000}
+          CONFIG_FILE="{{ app_dir }}/config/config.json"
+          LOG_FILE="{{ app_dir }}/logs/api.log"
+
+          cd {{ app_dir }}
+
+          # Python-based simple API server
+          exec python3 << 'PYEOF'
+          import http.server
+          import socketserver
+          import json
+          import subprocess
+          import os
+          import sys
+          from urllib.parse import urlparse, parse_qs
+          from datetime import datetime
+
+          PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 5000
+          API_KEY = os.environ.get('ADSDNSGO_API_KEY', '')
+          API_KEY_ID = os.environ.get('ADSDNSGO_API_KEY_ID', '')
+
+          class DNSHandler(http.server.BaseHTTPRequestHandler):
+              def log_message(self, format, *args):
+                  with open('{{ app_dir }}/logs/api.log', 'a') as f:
+                      f.write(f"{datetime.now().isoformat()} - {args}\n")
+
+              def send_json(self, data, status=200):
+                  self.send_response(status)
+                  self.send_header('Content-Type', 'application/json')
+                  self.send_header('Access-Control-Allow-Origin', '*')
+                  self.end_headers()
+                  self.wfile.write(json.dumps(data).encode())
+
+              def check_auth(self):
+                  auth = self.headers.get('Authorization', '')
+                  if API_KEY and not auth.endswith(API_KEY):
+                      self.send_json({'error': 'Unauthorized'}, 401)
+                      return False
+                  return True
+
+              def do_GET(self):
+                  parsed = urlparse(self.path)
+                  path = parsed.path
+                  params = parse_qs(parsed.query)
+
+                  if path == '/health':
+                      self.send_json({'status': 'healthy', 'service': 'adsdnsgo', 'timestamp': datetime.now().isoformat()})
+                      return
+
+                  if path == '/api/info':
+                      self.send_json({
+                          'service': 'adsdnsgo',
+                          'version': '0.1.0',
+                          'capabilities': ['dns_query', 'dnssec', 'spf', 'dkim', 'dmarc', 'debug'],
+                          'api_key_id': API_KEY_ID
+                      })
+                      return
+
+                  if not self.check_auth():
+                      return
+
+                  if path.startswith('/api/query/'):
+                      domain = path.split('/api/query/')[1].split('/')[0]
+                      record_type = params.get('type', ['A'])[0]
+                      result = self.dns_query(domain, record_type)
+                      self.send_json(result)
+                      return
+
+                  if path.startswith('/api/spf/'):
+                      domain = path.split('/api/spf/')[1]
+                      result = self.spf_check(domain)
+                      self.send_json(result)
+                      return
+
+                  if path.startswith('/api/dkim/'):
+                      domain = path.split('/api/dkim/')[1]
+                      result = self.dkim_discover(domain)
+                      self.send_json(result)
+                      return
+
+                  if path.startswith('/api/dmarc/'):
+                      domain = path.split('/api/dmarc/')[1]
+                      result = self.dmarc_check(domain)
+                      self.send_json(result)
+                      return
+
+                  self.send_json({'error': 'Not found', 'path': path}, 404)
+
+              def dns_query(self, domain, record_type):
+                  try:
+                      result = subprocess.run(
+                          ['dig', '+short', domain, record_type],
+                          capture_output=True, text=True, timeout=10
+                      )
+                      records = [r.strip() for r in result.stdout.strip().split('\n') if r.strip()]
+                      return {
+                          'domain': domain,
+                          'type': record_type,
+                          'records': records,
+                          'status': 'success'
+                      }
+                  except Exception as e:
+                      return {'domain': domain, 'type': record_type, 'error': str(e)}
+
+              def spf_check(self, domain):
+                  result = self.dns_query(domain, 'TXT')
+                  spf_records = [r for r in result.get('records', []) if 'v=spf1' in r]
+                  return {
+                      'domain': domain,
+                      'spf_records': spf_records,
+                      'valid': len(spf_records) == 1,
+                      'status': 'success'
+                  }
+
+              def dkim_discover(self, domain):
+                  selectors = ['default', 'selector1', 'selector2', 'google', 'mail', 'dkim', 's1', 's2', 'k1']
+                  found = []
+                  for sel in selectors:
+                      result = self.dns_query(f'{sel}._domainkey.{domain}', 'TXT')
+                      if result.get('records'):
+                          found.append({'selector': sel, 'record': result['records'][0][:100] + '...'})
+                  return {'domain': domain, 'selectors_found': found, 'status': 'success'}
+
+              def dmarc_check(self, domain):
+                  result = self.dns_query(f'_dmarc.{domain}', 'TXT')
+                  dmarc_records = [r for r in result.get('records', []) if 'v=DMARC1' in r]
+                  policy = None
+                  if dmarc_records:
+                      for part in dmarc_records[0].split(';'):
+                          if part.strip().startswith('p='):
+                              policy = part.split('=')[1].strip()
+                  return {
+                      'domain': domain,
+                      'dmarc_record': dmarc_records[0] if dmarc_records else None,
+                      'policy': policy,
+                      'enabled': len(dmarc_records) > 0,
+                      'status': 'success'
+                  }
+
+          with socketserver.TCPServer(("", PORT), DNSHandler) as httpd:
+              print(f"adsdnsgo API server running on port {PORT}")
+              httpd.serve_forever()
+          PYEOF
+
+    - name: Create systemd service
+      copy:
+        dest: /etc/systemd/system/adsdnsgo-api.service
+        content: |
+          [Unit]
+          Description=adsdnsgo DNS API Service
+          After=network.target
+
+          [Service]
+          Type=simple
+          User=opc
+          WorkingDirectory={{ app_dir }}
+          ExecStart={{ app_dir }}/bin/dnsgo-api 5000
+          Restart=always
+          RestartSec=10
+          Environment=ADSDNSGO_API_KEY={{ api_key }}
+          Environment=ADSDNSGO_API_KEY_ID={{ api_key_id }}
+
+          [Install]
+          WantedBy=multi-user.target
+        mode: '0644'
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Start adsdnsgo API service
+      systemd:
+        name: adsdnsgo-api
+        enabled: yes
+        state: restarted
+
+    - name: Configure nginx reverse proxy
+      copy:
+        dest: /etc/nginx/conf.d/adsdnsgo.conf
+        content: |
+          server {
+              listen 80;
+              server_name _;
+
+              location / {
+                  proxy_pass http://127.0.0.1:5000;
+                  proxy_http_version 1.1;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+              }
+          }
+        mode: '0644'
+
+    - name: Start nginx
+      systemd:
+        name: nginx
+        enabled: yes
+        state: restarted
+
+    - name: Open firewall ports
+      firewalld:
+        port: "{{ item }}"
+        permanent: yes
+        state: enabled
+        immediate: yes
+      loop:
+        - 80/tcp
+        - 443/tcp
+        - 5000/tcp
+      ignore_errors: yes
+
+    - name: Wait for API to be ready
+      uri:
+        url: "http://localhost:5000/health"
+        status_code: 200
+      register: health_check
+      retries: 10
+      delay: 5
+      until: health_check.status == 200
+
+    - name: Display deployment info
+      debug:
+        msg: |
+          adsdnsgo deployed successfully!
+
+          API Endpoint: http://{{ ansible_host }}:5000
+          Health Check: http://{{ ansible_host }}:5000/health
+          API Info: http://{{ ansible_host }}:5000/api/info
+
+          Example queries:
+            curl http://{{ ansible_host }}/api/query/google.com?type=A
+            curl http://{{ ansible_host }}/api/spf/google.com
+            curl http://{{ ansible_host }}/api/dkim/google.com
+            curl http://{{ ansible_host }}/api/dmarc/google.com
+
+          API Key ID: {{ api_key_id }}

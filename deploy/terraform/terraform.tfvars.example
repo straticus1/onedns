@@ -1,0 +1,32 @@
+# adsdnsgo - OCI Terraform Variables
+# Copy this to terraform.tfvars and fill in your values
+
+# OCI Authentication
+tenancy_ocid     = "ocid1.tenancy.oc1..xxxxx"
+user_ocid        = "ocid1.user.oc1..xxxxx"
+fingerprint      = "xx:xx:xx:xx:xx:xx:xx:xx"
+private_key_path = "~/.oci/oci_api_key.pem"
+compartment_ocid = "ocid1.tenancy.oc1..xxxxx"
+
+# Region
+region = "us-ashburn-1"
+
+# Environment
+environment = "production"
+
+# Network
+vcn_cidr           = "10.0.0.0/16"
+public_subnet_cidr = "10.0.1.0/24"
+allowed_ssh_cidr   = "0.0.0.0/0"  # Restrict in production
+
+# Compute (Always Free eligible)
+instance_shape      = "VM.Standard.A1.Flex"
+instance_ocpus      = 2
+instance_memory_gb  = 12
+boot_volume_size_gb = 100
+
+# SSH Key
+ssh_public_key = "ssh-rsa AAAA..."
+
+# Optional: dnsscience.io integration
+# dnsscience_api_key = ""
