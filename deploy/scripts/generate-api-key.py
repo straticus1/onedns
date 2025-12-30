@@ -33,8 +33,8 @@ def main():
     key_hash = hash_key(api_key)
     key_prefix = get_prefix(api_key)
 
-    # Get endpoint from environment or use default
-    endpoint = os.environ.get('ADSDNSGO_ENDPOINT', 'http://localhost:5000')
+    # Get endpoint from environment or use dnsscience.io production
+    endpoint = os.environ.get('ADSDNSGO_ENDPOINT', 'https://dnsscience.io')
 
     # Create credentials object
     credentials = {
