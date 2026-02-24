@@ -1564,9 +1564,272 @@ onedns science analytics --period 30d
 
 ---
 
-## 3. Configuration
+## 3. Centralized Authentication & API Key Management
 
-### 3.1 Configuration File Format
+### 3.1 Authentication Architecture
+
+The `onedns` CLI serves as the **central authentication chokepoint** for all platform integrations. All API keys, credentials, and access tokens are managed through the `onedns` credential store, providing a unified authentication layer.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        ONEDNS CLI (Auth Layer)                          │
+│                                                                         │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │            Credential Store (~/.config/onedns/keyring)            │  │
+│  │                                                                   │  │
+│  │  • dnsscience.io API Key                                         │  │
+│  │  • OpenSRS/Tucows API Key                                        │  │
+│  │  • DNSScienced Server API Keys                                   │  │
+│  │  • Cloudflare API Tokens                                         │  │
+│  │  • AWS Route53 Credentials                                       │  │
+│  │  • Infoblox NIOS Credentials                                     │  │
+│  │  • BlueCat DDI API Keys                                          │  │
+│  │  • PowerDNS API Keys                                             │  │
+│  │  • BIND TSIG Keys                                                │  │
+│  │                                                                   │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                              ▲                                          │
+│                              │                                          │
+│         All commands authenticate through credential store              │
+│                              │                                          │
+├──────────────────────────────┴──────────────────────────────────────────┤
+│                     Platform Integrations                               │
+│                                                                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
+│  │ dnsscience  │  │  OpenSRS    │  │ DNSScienced │  │  Cloudflare │   │
+│  │    .io      │  │             │  │   Servers   │  │             │   │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘   │
+│                                                                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
+│  │   Route53   │  │  Infoblox   │  │   BlueCat   │  │  PowerDNS   │   │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Key Principles:**
+- **Single Source of Truth** - All credentials stored in one secure location
+- **Platform Agnostic** - Uniform interface regardless of backend platform
+- **Secure by Default** - Encrypted storage, OS keyring integration
+- **Granular Permissions** - Role-based access control per platform
+- **Audit Trail** - All API calls logged with credential usage
+
+### 3.2 Credential Management Commands
+
+```bash
+onedns auth <subcommand>
+
+Subcommands:
+  add         Add new platform credentials
+  list        List configured platforms
+  remove      Remove platform credentials
+  test        Test platform connectivity
+  rotate      Rotate API keys
+  export      Export credentials (encrypted)
+  import      Import credentials (encrypted)
+
+Supported Platforms:
+  dnsscience      dnsscience.io platform
+  opensrs         OpenSRS/Tucows registrar
+  dnsscienced     DNSScienced server
+  cloudflare      Cloudflare DNS
+  route53         AWS Route53
+  infoblox        Infoblox NIOS
+  bluecat         BlueCat DDI
+  powerdns        PowerDNS API
+  bind            BIND with TSIG keys
+```
+
+#### Authentication Examples
+
+```bash
+# Add dnsscience.io API key
+onedns auth add dnsscience --key-file ~/Downloads/dnsscience-api-key.json
+  Output:
+  ✅ dnsscience.io credentials added
+  Organization: After Dark Systems
+  Tier: Enterprise
+  Permissions: scan, read, write, analytics
+  Expires: 2025-12-31
+
+  Credentials securely stored in: ~/.config/onedns/keyring/dnsscience.enc
+
+# Add OpenSRS API credentials
+onedns auth add opensrs --username myuser --api-key XXXXX
+  Output:
+  ✅ OpenSRS credentials added
+  Username: myuser
+  Environment: production
+  Permissions: domain, dns, ssl
+
+  Testing connection... ✅ Connected
+  Available domains: 1,247
+
+# Add DNSScienced server
+onedns auth add dnsscienced --host dns.example.com --api-key-file ./server-key.json
+  Output:
+  ✅ DNSScienced server added
+  Server: dns.example.com
+  Version: DNSScienced 2.1.0
+  License: Enterprise (expires 2025-06-30)
+  Features: authoritative, recursive, dnssec, doh, dot
+
+# Add multiple Cloudflare accounts
+onedns auth add cloudflare --name production --api-token XXXXX
+onedns auth add cloudflare --name staging --api-token YYYYY
+  Output:
+  ✅ Cloudflare account 'production' added
+  ✅ Cloudflare account 'staging' added
+
+  Use --account flag to specify: onedns query example.com --account production
+
+# List all configured platforms
+onedns auth list
+  Output:
+  ┌─ Configured Platforms ──────────────────────────────────────────────────┐
+  │                                                                         │
+  │ Platform        Status    Account/Server            Last Used          │
+  │ ─────────────────────────────────────────────────────────────────────  │
+  │ dnsscience      ✅        After Dark Systems        2 hours ago         │
+  │ opensrs         ✅        myuser                    5 days ago          │
+  │ dnsscienced     ✅        dns.example.com           1 day ago           │
+  │ cloudflare      ✅        production                3 hours ago         │
+  │ cloudflare      ✅        staging                   1 week ago          │
+  │ route53         ✅        aws-account-123           2 days ago          │
+  │ infoblox        ⚠️        infoblox.example.com     (cert expired)       │
+  │ powerdns        ✅        ns1.example.com           5 hours ago         │
+  │                                                                         │
+  │ Total: 8 platforms, 7 active                                            │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+# Test platform connectivity
+onedns auth test dnsscience
+  Output:
+  Testing dnsscience.io connection...
+  ┌─ Connection Test ───────────────────────────────────────────────────────┐
+  │ Endpoint:    https://api.dnsscience.io                                  │
+  │ Status:      ✅ Connected                                                │
+  │ Latency:     42ms                                                       │
+  │ API Version: v2.1                                                       │
+  │ Rate Limit:  1000/hour (987 remaining)                                  │
+  │ Quota:       Unlimited                                                  │
+  │ Auth:        ✅ Valid (expires 2025-12-31)                               │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+# Rotate API key for a platform
+onedns auth rotate dnsscience --output new-key.json
+  Output:
+  🔄 Rotating dnsscience.io API key...
+
+  Old key: dns_live_304aa7a... (expires 2025-12-31)
+  New key: dns_live_891bc3d... (expires 2026-12-31)
+
+  ✅ Key rotation successful
+  Old key will remain valid for 7 days for grace period
+  New key saved to: new-key.json (backup)
+
+# Remove platform credentials
+onedns auth remove infoblox
+  Output:
+  ⚠️  Remove Infoblox credentials?
+  Server: infoblox.example.com
+  Last used: 3 months ago
+
+  Type 'yes' to confirm: yes
+
+  ✅ Infoblox credentials removed
+```
+
+### 3.3 Platform-Specific Authentication
+
+Each platform integration uses the centralized credential store:
+
+```bash
+# dnsscience.io - all science commands use stored credentials
+onedns science scan example.com
+# Automatically uses: ~/.config/onedns/keyring/dnsscience.enc
+
+# DNSScienced server management
+onedns server status
+# Uses: ~/.config/onedns/keyring/dnsscienced-dns.example.com.enc
+
+# Query via specific platform
+onedns query example.com --via cloudflare --account production
+# Uses: ~/.config/onedns/keyring/cloudflare-production.enc
+
+# Zone operations with authentication
+onedns zone import example.com --via infoblox
+# Uses: ~/.config/onedns/keyring/infoblox.enc
+```
+
+### 3.4 Credential Storage Security
+
+**Storage Location:**
+```
+~/.config/onedns/
+├── config.json                   # Main configuration
+├── keyring/                      # Encrypted credentials
+│   ├── dnsscience.enc           # dnsscience.io key
+│   ├── opensrs.enc              # OpenSRS key
+│   ├── cloudflare-prod.enc      # Cloudflare production
+│   ├── cloudflare-staging.enc   # Cloudflare staging
+│   ├── dnsscienced-*.enc        # DNSScienced servers
+│   └── metadata.json            # Credential metadata
+└── audit.log                     # Authentication audit log
+```
+
+**Security Features:**
+- **AES-256-GCM Encryption** - All credentials encrypted at rest
+- **OS Keyring Integration** - Master key stored in system keychain (macOS Keychain, Windows Credential Manager, Linux Secret Service)
+- **File Permissions** - Credential files are 0600 (owner read/write only)
+- **No Plaintext Storage** - API keys never stored in plaintext
+- **Audit Logging** - All credential access logged
+- **Auto-Lock** - Credentials locked after inactivity period
+
+**Credential File Format (encrypted):**
+```json
+{
+  "version": "1.0",
+  "platform": "dnsscience",
+  "encrypted_data": "...",  // AES-256-GCM encrypted blob
+  "metadata": {
+    "created": "2024-12-30T10:00:00Z",
+    "last_used": "2024-12-30T15:30:00Z",
+    "expires": "2025-12-31T23:59:59Z",
+    "account": "After Dark Systems",
+    "permissions": ["scan", "read", "write", "analytics"]
+  }
+}
+```
+
+### 3.5 Multi-Account Support
+
+Support for multiple accounts per platform:
+
+```bash
+# Add multiple dnsscience.io accounts
+onedns auth add dnsscience --name personal --key-file ~/personal-key.json
+onedns auth add dnsscience --name work --key-file ~/work-key.json
+
+# Use specific account
+onedns science scan example.com --account personal
+onedns science scan example.com --account work
+
+# Set default account
+onedns auth set-default dnsscience --account work
+
+# List accounts for platform
+onedns auth list dnsscience
+  Output:
+  dnsscience.io accounts:
+    • personal         (last used: 2 days ago)
+    • work (default)   (last used: 1 hour ago)
+```
+
+---
+
+## 4. Configuration
+
+### 4.1 Configuration File Format
 
 ```json
 {
@@ -1582,22 +1845,26 @@ onedns science analytics --period 30d
     "dnssec_validation": ["9.9.9.9"],
     "internal": ["192.168.1.53"]
   },
-  "dnsscience": {
-    "api_key_file": "~/.config/onedns/dnsscience-key.json",
-    "endpoint": "https://api.dnsscience.io",
-    "auto_submit": false
+  "auth": {
+    "keyring_dir": "~/.config/onedns/keyring",
+    "auto_lock_minutes": 60,
+    "require_confirmation": ["rotate", "remove", "export"]
   },
-  "appliances": {
-    "infoblox": {
-      "url": "https://infoblox.example.com",
-      "username": "api-user",
-      "password_file": "~/.config/onedns/infoblox-pass",
-      "version": "2.11",
-      "default_view": "default"
+  "platforms": {
+    "dnsscience": {
+      "default_account": "production",
+      "endpoint": "https://api.dnsscience.io",
+      "auto_submit_scans": false
     },
-    "bluecat": {
-      "url": "https://bluecat.example.com",
-      "api_key_file": "~/.config/onedns/bluecat-key"
+    "opensrs": {
+      "environment": "production",
+      "endpoint": "https://rr-n1-tor.opensrs.net:55443"
+    },
+    "dnsscienced": {
+      "default_server": "dns.example.com"
+    },
+    "cloudflare": {
+      "default_account": "production"
     }
   },
   "dkim_selectors": [
@@ -1633,17 +1900,23 @@ ONEDNS_COLOR=true
 ONEDNS_RESOLVER=8.8.8.8
 ONEDNS_TIMEOUT=10s
 
-# API keys
+# Authentication
+ONEDNS_KEYRING_DIR=~/.config/onedns/keyring
+ONEDNS_DEFAULT_ACCOUNT=production
+
+# Platform-specific (override credential store)
 ONEDNS_DNSSCIENCE_KEY=<api-key>
-ONEDNS_INFOBLOX_URL=https://infoblox.example.com
-ONEDNS_INFOBLOX_USER=admin
-ONEDNS_INFOBLOX_PASS=<password>
-ONEDNS_BLUECAT_KEY=<api-key>
+ONEDNS_OPENSRS_KEY=<api-key>
+ONEDNS_OPENSRS_USER=<username>
+ONEDNS_CLOUDFLARE_TOKEN=<api-token>
+
+# Note: Environment variables override credential store
+# Not recommended for production - use 'onedns auth add' instead
 ```
 
 ---
 
-## 4. dnsscience.io API Integration
+## 5. dnsscience.io API Integration
 
 ### 4.1 API Endpoints Used
 
