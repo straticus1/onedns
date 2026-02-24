@@ -1,4 +1,4 @@
-This is the repo for "adsdnsgo" "After Dark Systems DNS GO!"
+This is the repo for "onedns" - One DNS Tool for Everything
 
 Goals:
 
@@ -8,19 +8,19 @@ Goals:
 - Full integration into dnsscience.io API
 - Support config file in JSON
 - Support all the features of "dig" and "drill"
-- I think a newly designed dns CLI that is something like:
+- A newly designed dns CLI that is something like:
 
-dnsgo query <item> <query-type> <level>
-dnsgo debug <options>
-dnsgo mkpacket <dns-packet> <value>
-dnsgo makekey 
-dnsgo txt <host> validate
-dnsgo spf make <host>
-dnsgo spf get <host>
-dnsgo dmarc get or show <host>
-dnsgo appliance set <ibx|bluecat> <url> <key<
-dnsgo validate <type> <platform>
-dnsgo science <dnsscience> <platform> <features> <host or url>
+onedns query <item> <query-type> <level>
+onedns debug <options>
+onedns mkpacket <dns-packet> <value>
+onedns makekey
+onedns txt <host> validate
+onedns spf make <host>
+onedns spf get <host>
+onedns dmarc get or show <host>
+onedns appliance set <ibx|bluecat> <url> <key<
+onedns validate <type> <platform>
+onedns science <dnsscience> <platform> <features> <host or url>
 
 platform = ibx,bluecat,djbdns,bind,powerdns,unbound,nsd
 validate supports type = <dir> or <file>

@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "service": "adsdnsgo",
+  "environment": "{{ environment | default('production') }}",
+  "defaults": {
+    "output_level": "long",
+    "color": true,
+    "timeout": "10s",
+    "retries": 3
+  },
+  "resolvers": {
+    "default": ["8.8.8.8", "1.1.1.1"],
+    "dnssec_validation": ["9.9.9.9"],
+    "internal": []
+  },
+  "api": {
+    "enabled": true,
+    "port": 5000,
+    "host": "0.0.0.0",
+    "rate_limit": {
+      "requests_per_minute": 60,
+      "requests_per_hour": 1000
+    },
+    "auth": {
+      "enabled": true,
+      "api_key_id": "{{ api_key_id }}",
+      "api_key_hash": "{{ api_key | hash('sha256') }}"
+    }
+  },
+  "dnsscience": {
+    "enabled": {{ dnsscience_enabled | default('false') | lower }},
+    "endpoint": "{{ dnsscience_endpoint | default('https://api.dnsscience.io') }}",
+    "api_key_file": "/opt/adsdnsgo/config/dnsscience-key.json"
+  },
+  "logging": {
+    "level": "info",
+    "file": "/opt/adsdnsgo/logs/adsdnsgo.log",
+    "max_size_mb": 100,
+    "max_backups": 5
+  },
+  "dkim_selectors": [
+    "default", "selector1", "selector2", "google", "mail", "dkim",
+    "s1", "s2", "k1", "k2", "email", "smtp", "mailjet", "mandrill",
+    "amazonses", "sendgrid", "postmark", "mailgun"
+  ]
+}

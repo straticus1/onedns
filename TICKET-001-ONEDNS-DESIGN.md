@@ -1,6 +1,6 @@
-# TICKET-001: adsdnsgo - Advanced DNS Debugging & Science Tool
+# TICKET-001: onedns - Advanced DNS Debugging & Science Tool
 
-**Project:** After Dark Systems DNS GO! (adsdnsgo)
+**Project:** After Dark Systems DNS GO! (onedns)
 **Priority:** High
 **Type:** Feature - New Tool Development
 **Created:** 2024-12-30
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-Design and implement `adsdnsgo` - the world's most advanced, verbose, and integrated DNS debugging tool. This Go-based CLI combines the power of traditional tools like `dig` and `drill` with deep integration into the dnsscience.io platform for internet-scale DNS security research.
+Design and implement `onedns` - the world's most advanced, verbose, and integrated DNS debugging tool. This Go-based CLI combines the power of traditional tools like `dig` and `drill` with deep integration into the dnsscience.io platform for internet-scale DNS security research.
 
 ---
 
@@ -19,7 +19,7 @@ Design and implement `adsdnsgo` - the world's most advanced, verbose, and integr
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                           adsdnsgo CLI                                   │
+│                           onedns CLI                                   │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  Commands Layer                                                          │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐           │
@@ -47,9 +47,9 @@ Design and implement `adsdnsgo` - the world's most advanced, verbose, and integr
 ### 1.2 Module Structure
 
 ```
-adsdnsgo/
+onedns/
 ├── cmd/
-│   └── adsdnsgo/
+│   └── onedns/
 │       └── main.go                 # Entry point
 ├── internal/
 │   ├── cli/
@@ -119,7 +119,7 @@ adsdnsgo/
 │   ├── types/                      # Public types
 │   └── errors/                     # Error definitions
 ├── configs/
-│   └── adsdnsgo.json.example       # Example config
+│   └── onedns.json.example       # Example config
 ├── go.mod
 ├── go.sum
 └── README.md
@@ -158,12 +158,12 @@ Benefits:
 
 ## 3. Command Reference
 
-### 3.1 Query Command - `dnsgo query`
+### 3.1 Query Command - `onedns query`
 
 The primary DNS lookup command with unprecedented detail levels.
 
 ```bash
-dnsgo query <target> [record-type] [--level <level>] [flags]
+onedns query <target> [record-type] [--level <level>] [flags]
 
 # Record Types
 all | a | aaaa | cname | txt | ns | ptr | soa | mx | srv |
@@ -182,25 +182,25 @@ sshfp | naptr | loc | hinfo | cert | dname | any
 
 ```bash
 # Basic queries
-dnsgo query example.com                    # A record, long output
-dnsgo query example.com mx                 # MX records
-dnsgo query example.com all                # All common record types
-dnsgo query example.com any --level debug  # ANY query with packet dump
+onedns query example.com                    # A record, long output
+onedns query example.com mx                 # MX records
+onedns query example.com all                # All common record types
+onedns query example.com any --level debug  # ANY query with packet dump
 
 # DNSSEC queries
-dnsgo query example.com dnskey --dnssec    # Fetch DNSKEY with validation
-dnsgo query example.com ds                 # DS records from parent
+onedns query example.com dnskey --dnssec    # Fetch DNSKEY with validation
+onedns query example.com ds                 # DS records from parent
 
 # Advanced options
-dnsgo query example.com --trace            # Trace from root to answer
-dnsgo query example.com --server 8.8.8.8   # Use specific resolver
-dnsgo query example.com --tcp              # Force TCP
-dnsgo query example.com --timeout 10s      # Custom timeout
-dnsgo query example.com --retries 3        # Retry count
+onedns query example.com --trace            # Trace from root to answer
+onedns query example.com --server 8.8.8.8   # Use specific resolver
+onedns query example.com --tcp              # Force TCP
+onedns query example.com --timeout 10s      # Custom timeout
+onedns query example.com --retries 3        # Retry count
 
 # Embedded DNS - use dnsscience.io cache servers
-dnsgo query example.com --embedded-dns     # Use cache01-04.dnsscience.io
-dnsgo query example.com -ed                # Short form
+onedns query example.com --embedded-dns     # Use cache01-04.dnsscience.io
+onedns query example.com -ed                # Short form
 ```
 
 #### Query Output Levels
@@ -348,12 +348,12 @@ example.com.            172800  IN      NS      b.iana-servers.net.
 
 ---
 
-### 2.2 Debug Command - `dnsgo debug`
+### 2.2 Debug Command - `onedns debug`
 
 Comprehensive DNS debugging toolkit.
 
 ```bash
-dnsgo debug <subcommand> [flags]
+onedns debug <subcommand> [flags]
 
 Subcommands:
   trace       Trace resolution path from root
@@ -372,7 +372,7 @@ Subcommands:
 
 ```bash
 # Trace full resolution path
-dnsgo debug trace example.com
+onedns debug trace example.com
   Output:
   ┌─ Resolution Trace: example.com ────────────────────────────────────────────┐
   │                                                                            │
@@ -399,7 +399,7 @@ dnsgo debug trace example.com
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Compare resolvers
-dnsgo debug compare example.com --resolvers 8.8.8.8,1.1.1.1,9.9.9.9
+onedns debug compare example.com --resolvers 8.8.8.8,1.1.1.1,9.9.9.9
   Output:
   ┌─ Resolver Comparison: example.com A ───────────────────────────────────────┐
   │                                                                            │
@@ -414,7 +414,7 @@ dnsgo debug compare example.com --resolvers 8.8.8.8,1.1.1.1,9.9.9.9
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Global propagation check
-dnsgo debug propagation example.com --type A
+onedns debug propagation example.com --type A
   Output:
   ┌─ Global DNS Propagation: example.com A ────────────────────────────────────┐
   │                                                                            │
@@ -433,7 +433,7 @@ dnsgo debug propagation example.com --type A
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Delegation chain verification
-dnsgo debug delegation example.com
+onedns debug delegation example.com
   Output:
   ┌─ Delegation Chain Analysis: example.com ───────────────────────────────────┐
   │                                                                            │
@@ -460,12 +460,12 @@ dnsgo debug delegation example.com
 
 ---
 
-### 2.3 Packet Forge Command - `dnsgo mkpacket`
+### 2.3 Packet Forge Command - `onedns mkpacket`
 
 Construct custom DNS packets for testing and research.
 
 ```bash
-dnsgo mkpacket <packet-type> [flags]
+onedns mkpacket <packet-type> [flags]
 
 Packet Types:
   query       Construct DNS query packet
@@ -493,7 +493,7 @@ Flags:
 
 ```bash
 # Create standard A query
-dnsgo mkpacket query --question example.com:A:IN --output annotated
+onedns mkpacket query --question example.com:A:IN --output annotated
   Output:
   ┌─ DNS QUERY PACKET ─────────────────────────────────────────────────────────┐
   │                                                                            │
@@ -513,11 +513,11 @@ dnsgo mkpacket query --question example.com:A:IN --output annotated
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Create malformed packet for testing (truncated)
-dnsgo mkpacket query --question test.example.com:A:IN --flags "qr,tc" --output hex
+onedns mkpacket query --question test.example.com:A:IN --flags "qr,tc" --output hex
   Output: 7b2f8500000100000000000004746573740765...
 
 # Create DNS UPDATE for dynamic DNS
-dnsgo mkpacket update \
+onedns mkpacket update \
   --zone example.com \
   --prerequisite "yxrrset:host.example.com:A" \
   --update "delete:host.example.com:A" \
@@ -526,7 +526,7 @@ dnsgo mkpacket update \
   --send ns1.example.com
 
 # Create EDNS query with large UDP size and DNSSEC
-dnsgo mkpacket query \
+onedns mkpacket query \
   --question example.com:DNSKEY:IN \
   --edns \
   --edns-size 4096 \
@@ -536,12 +536,12 @@ dnsgo mkpacket query \
 
 ---
 
-### 2.4 DNSSEC Key Commands - `dnsgo makekey`
+### 2.4 DNSSEC Key Commands - `onedns makekey`
 
 Generate and manage DNSSEC keys.
 
 ```bash
-dnsgo makekey [flags]
+onedns makekey [flags]
 
 Flags:
   --algorithm <alg>   Algorithm: RSASHA256, RSASHA512, ECDSAP256SHA256,
@@ -557,7 +557,7 @@ Flags:
 
 ```bash
 # Generate ECDSA P-256 KSK (recommended)
-dnsgo makekey --algorithm ECDSAP256SHA256 --type KSK --zone example.com
+onedns makekey --algorithm ECDSAP256SHA256 --type KSK --zone example.com
   Output:
   ┌─ DNSSEC Key Generation ────────────────────────────────────────────────────┐
   │                                                                            │
@@ -583,20 +583,20 @@ dnsgo makekey --algorithm ECDSAP256SHA256 --type KSK --zone example.com
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Generate ZSK with RSA (legacy compatibility)
-dnsgo makekey --algorithm RSASHA256 --type ZSK --bits 2048 --zone example.com
+onedns makekey --algorithm RSASHA256 --type ZSK --bits 2048 --zone example.com
 
 # Generate Ed25519 keys (modern, fast)
-dnsgo makekey --algorithm ED25519 --type KSK --zone example.com
+onedns makekey --algorithm ED25519 --type KSK --zone example.com
 ```
 
 ---
 
 ### 2.5 Email Security Commands
 
-#### SPF Commands - `dnsgo spf`
+#### SPF Commands - `onedns spf`
 
 ```bash
-dnsgo spf <subcommand> <domain> [flags]
+onedns spf <subcommand> <domain> [flags]
 
 Subcommands:
   get         Fetch and display SPF record
@@ -611,7 +611,7 @@ Subcommands:
 
 ```bash
 # Get SPF record with analysis
-dnsgo spf get google.com --level verbose
+onedns spf get google.com --level verbose
   Output:
   ┌─ SPF Analysis: google.com ─────────────────────────────────────────────────┐
   │                                                                            │
@@ -635,7 +635,7 @@ dnsgo spf get google.com --level verbose
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Test if an IP passes SPF
-dnsgo spf test google.com --ip 172.217.14.99 --sender user@google.com
+onedns spf test google.com --ip 172.217.14.99 --sender user@google.com
   Output:
   ┌─ SPF Test Result ──────────────────────────────────────────────────────────┐
   │ Domain: google.com                                                         │
@@ -649,7 +649,7 @@ dnsgo spf test google.com --ip 172.217.14.99 --sender user@google.com
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Generate SPF record
-dnsgo spf make example.com
+onedns spf make example.com
   Interactive:
   ? Include your mail server IPs? [Y/n] Y
   ? Enter IPv4 addresses (comma-separated): 192.168.1.10, 192.168.1.11
@@ -667,16 +667,16 @@ dnsgo spf make example.com
   v=spf1 ip4:192.168.1.10 ip4:192.168.1.11 include:_spf.google.com -all
 
 # Flatten SPF (resolve all includes to IPs)
-dnsgo spf flatten example.com
+onedns spf flatten example.com
   Output:
   v=spf1 ip4:192.168.1.10 ip4:192.168.1.11 ip4:172.217.0.0/19 ip4:172.217.32.0/20
          ip4:172.217.128.0/19 ... -all
 ```
 
-#### DKIM Commands - `dnsgo dkim`
+#### DKIM Commands - `onedns dkim`
 
 ```bash
-dnsgo dkim <subcommand> [flags]
+onedns dkim <subcommand> [flags]
 
 Subcommands:
   get         Fetch DKIM record for selector
@@ -690,7 +690,7 @@ Subcommands:
 
 ```bash
 # Discover DKIM selectors
-dnsgo dkim discover google.com
+onedns dkim discover google.com
   Output:
   ┌─ DKIM Selector Discovery: google.com ──────────────────────────────────────┐
   │                                                                            │
@@ -717,7 +717,7 @@ dnsgo dkim discover google.com
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Generate DKIM keys
-dnsgo dkim makekey --selector mail --domain example.com --bits 2048
+onedns dkim makekey --selector mail --domain example.com --bits 2048
   Output:
   ┌─ DKIM Key Generation ──────────────────────────────────────────────────────┐
   │                                                                            │
@@ -736,10 +736,10 @@ dnsgo dkim makekey --selector mail --domain example.com --bits 2048
   └────────────────────────────────────────────────────────────────────────────┘
 ```
 
-#### DMARC Commands - `dnsgo dmarc`
+#### DMARC Commands - `onedns dmarc`
 
 ```bash
-dnsgo dmarc <subcommand> <domain> [flags]
+onedns dmarc <subcommand> <domain> [flags]
 
 Subcommands:
   get         Fetch and analyze DMARC record
@@ -752,7 +752,7 @@ Subcommands:
 
 ```bash
 # Get DMARC with full analysis
-dnsgo dmarc get microsoft.com --level verbose
+onedns dmarc get microsoft.com --level verbose
   Output:
   ┌─ DMARC Analysis: microsoft.com ────────────────────────────────────────────┐
   │                                                                            │
@@ -787,7 +787,7 @@ dnsgo dmarc get microsoft.com --level verbose
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Generate DMARC record interactively
-dnsgo dmarc make example.com
+onedns dmarc make example.com
   Interactive:
   ? What policy for failing emails?
     ❯ reject (Recommended for established domains)
@@ -810,10 +810,10 @@ dnsgo dmarc make example.com
   ruf=mailto:forensics@example.com; adkim=r; aspf=r; fo=1
 ```
 
-#### TXT Record Validation - `dnsgo txt`
+#### TXT Record Validation - `onedns txt`
 
 ```bash
-dnsgo txt <host> <subcommand> [flags]
+onedns txt <host> <subcommand> [flags]
 
 Subcommands:
   get         Fetch all TXT records
@@ -825,7 +825,7 @@ Subcommands:
 
 ```bash
 # Get all TXT records with analysis
-dnsgo txt google.com get --level verbose
+onedns txt google.com get --level verbose
   Output:
   ┌─ TXT Records: google.com ──────────────────────────────────────────────────┐
   │                                                                            │
@@ -860,12 +860,12 @@ dnsgo txt google.com get --level verbose
 
 ---
 
-### 2.6 Appliance Integration - `dnsgo appliance`
+### 2.6 Appliance Integration - `onedns appliance`
 
 Manage DDI appliance connections.
 
 ```bash
-dnsgo appliance <subcommand> [flags]
+onedns appliance <subcommand> [flags]
 
 Subcommands:
   set         Configure appliance connection
@@ -890,14 +890,14 @@ Flags:
 
 ```bash
 # Configure Infoblox
-dnsgo appliance set infoblox \
+onedns appliance set infoblox \
   --url https://infoblox.example.com \
   --username admin \
   --password-file ~/.infoblox-pass \
   --version 2.11
 
 # Test connection
-dnsgo appliance test infoblox
+onedns appliance test infoblox
   Output:
   ┌─ Infoblox Connection Test ─────────────────────────────────────────────────┐
   │                                                                            │
@@ -919,7 +919,7 @@ dnsgo appliance test infoblox
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Query records from Infoblox
-dnsgo appliance query infoblox "host.example.com" --type A
+onedns appliance query infoblox "host.example.com" --type A
   Output:
   ┌─ Infoblox Record Query ────────────────────────────────────────────────────┐
   │                                                                            │
@@ -942,19 +942,19 @@ dnsgo appliance query infoblox "host.example.com" --type A
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Configure BlueCat
-dnsgo appliance set bluecat \
+onedns appliance set bluecat \
   --url https://bluecat.example.com \
   --api-key $BLUECAT_API_KEY
 ```
 
 ---
 
-### 2.7 Zone Validation - `dnsgo validate`
+### 2.7 Zone Validation - `onedns validate`
 
 Validate zone files and DNS configurations.
 
 ```bash
-dnsgo validate <type> <path> [flags]
+onedns validate <type> <path> [flags]
 
 Types:
   zone        Validate zone file
@@ -977,7 +977,7 @@ Flags:
 
 ```bash
 # Validate BIND zone file
-dnsgo validate zone /etc/bind/zones/example.com.zone --platform bind
+onedns validate zone /etc/bind/zones/example.com.zone --platform bind
   Output:
   ┌─ Zone Validation: example.com ─────────────────────────────────────────────┐
   │                                                                            │
@@ -1021,7 +1021,7 @@ dnsgo validate zone /etc/bind/zones/example.com.zone --platform bind
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Validate BIND configuration
-dnsgo validate config /etc/bind/named.conf --platform bind --strict
+onedns validate config /etc/bind/named.conf --platform bind --strict
   Output:
   ┌─ BIND Configuration Validation ────────────────────────────────────────────┐
   │                                                                            │
@@ -1055,12 +1055,302 @@ dnsgo validate config /etc/bind/named.conf --platform bind --strict
 
 ---
 
-### 2.8 DNS Science Integration - `dnsgo science`
+### 2.8 Zone Import/Export - `onedns zone`
+
+Import DNS zones from live nameservers using AXFR, IXFR, or zone walking techniques. Export zones to various formats.
+
+```bash
+onedns zone import <domain> [flags]
+onedns zone export <domain> [flags]
+
+Import Methods:
+  axfr          Full zone transfer (AXFR)
+  ixfr          Incremental zone transfer (IXFR)
+  walk          Zone walking via NSEC/NSEC3
+  enumerate     Intelligent enumeration (like Cloudflare import)
+
+Export Formats:
+  bind          BIND zone file format
+  json          JSON structured format
+  csv           CSV format
+  yaml          YAML format
+  dnsscienced   DNSScienced native format
+  terraform     Terraform DNS resources
+
+Flags:
+  --server <ns>         Nameserver to query (default: authoritative NS)
+  --method <method>     Import method (default: auto-detect)
+  --tsig-key <key>      TSIG key for authenticated transfer
+  --output <file>       Output file path
+  --format <fmt>        Export format
+  --include-dnssec      Include DNSSEC records
+  --strip-comments      Remove comments from zone
+  --sort                Sort records alphabetically
+```
+
+#### Zone Import Examples
+
+```bash
+# Import via AXFR (zone transfer)
+onedns zone import example.com --method axfr
+  Output:
+  ┌─ Zone Import: example.com ─────────────────────────────────────────────────┐
+  │                                                                            │
+  │ Method: AXFR (Full Zone Transfer)                                          │
+  │ Nameserver: ns1.example.com (203.0.113.1)                                  │
+  │ Zone: example.com                                                          │
+  │                                                                            │
+  │ Transfer Progress:                                                         │
+  │ [████████████████████████████████████████] 100%                            │
+  │                                                                            │
+  │ Records Imported:                                                          │
+  │   SOA:        1                                                            │
+  │   NS:         4                                                            │
+  │   A:          127                                                          │
+  │   AAAA:       45                                                           │
+  │   CNAME:      38                                                           │
+  │   MX:         5                                                            │
+  │   TXT:        12                                                           │
+  │   SRV:        3                                                            │
+  │   DNSKEY:     2   (DNSSEC)                                                 │
+  │   RRSIG:      156 (DNSSEC)                                                 │
+  │   NSEC3:      312 (DNSSEC)                                                 │
+  │   ─────────────────                                                        │
+  │   Total:      705 records                                                  │
+  │                                                                            │
+  │ Zone saved to: example.com.zone                                            │
+  │ Format: BIND zone file                                                     │
+  │                                                                            │
+  │ ✅ Import completed in 1.23s                                                │
+  └────────────────────────────────────────────────────────────────────────────┘
+
+# Import via zone walking (when AXFR is blocked)
+onedns zone import example.com --method walk --level verbose
+  Output:
+  ┌─ Zone Import: example.com (NSEC Walking) ──────────────────────────────────┐
+  │                                                                            │
+  │ Method: NSEC Chain Walking                                                 │
+  │ AXFR Status: ❌ Refused (attempting zone walk)                             │
+  │                                                                            │
+  │ Starting from: example.com (SOA)                                           │
+  │ Walking NSEC chain...                                                      │
+  │                                                                            │
+  │ Discovered Records:                                                        │
+  │   1. example.com                    → SOA, NS, A, MX, TXT                  │
+  │   2. _dmarc.example.com             → TXT                                  │
+  │   3. api.example.com                → A, AAAA                              │
+  │   4. autodiscover.example.com       → CNAME                                │
+  │   5. blog.example.com               → A                                    │
+  │   6. cdn.example.com                → CNAME                                │
+  │   7. ftp.example.com                → A                                    │
+  │   8. mail.example.com               → A, MX                                │
+  │   9. ns1.example.com                → A, AAAA                              │
+  │  10. ns2.example.com                → A, AAAA                              │
+  │  11. shop.example.com               → A                                    │
+  │  12. webmail.example.com            → CNAME                                │
+  │  13. www.example.com                → A, AAAA                              │
+  │                                                                            │
+  │ [████████████████████████████] 13 names discovered                         │
+  │                                                                            │
+  │ Total Records: 47                                                          │
+  │ Walk Time: 2.8s                                                            │
+  │                                                                            │
+  │ ⚠️  Note: NSEC walking only discovers existing names, may miss some        │
+  │    records in zones with NSEC3 hashing or opt-out                          │
+  │                                                                            │
+  │ Zone saved to: example.com.zone                                            │
+  └────────────────────────────────────────────────────────────────────────────┘
+
+# Import using intelligent enumeration (Cloudflare-style)
+onedns zone import example.com --method enumerate --level verbose
+  Output:
+  ┌─ Zone Import: example.com (Smart Enumeration) ─────────────────────────────┐
+  │                                                                            │
+  │ Import Strategy:                                                           │
+  │   1. AXFR attempt            → ❌ Refused                                  │
+  │   2. NSEC/NSEC3 walk         → ✅ Partial (13 names)                       │
+  │   3. Common subdomain scan   → ✅ Running                                  │
+  │   4. Wildcard detection      → ✅ Running                                  │
+  │   5. Certificate transparency → ✅ Running                                 │
+  │                                                                            │
+  │ Progress:                                                                  │
+  │ [████████████████████████████████████] 87%                                 │
+  │                                                                            │
+  │ Discovered via:                                                            │
+  │   NSEC Walk:              13 names                                         │
+  │   Common Subdomains:      8 names  (www, mail, ftp, etc.)                 │
+  │   Certificate Trans:      24 names  (from crt.sh)                          │
+  │   MX Lookups:             2 names   │
+  │   NS Glue Records:        4 names                                          │
+  │   SPF Includes:           3 names                                          │
+  │   ─────────────────────────────────                                        │
+  │   Total Unique:           42 names                                         │
+  │                                                                            │
+  │ Querying each name for all record types...                                 │
+  │ [████████████████████████████████████] 42/42 names                         │
+  │                                                                            │
+  │ Final Record Count:                                                        │
+  │   A:        58                                                             │
+  │   AAAA:     34                                                             │
+  │   CNAME:    21                                                             │
+  │   MX:       6                                                              │
+  │   TXT:      18                                                             │
+  │   NS:       4                                                              │
+  │   SOA:      1                                                              │
+  │   SRV:      2                                                              │
+  │   CAA:      1                                                              │
+  │   ─────────────                                                            │
+  │   Total:    145 records                                                    │
+  │                                                                            │
+  │ Confidence: HIGH (cross-verified via multiple sources)                     │
+  │                                                                            │
+  │ ⚠️  This is a best-effort reconstruction. May not be 100% complete         │
+  │    compared to actual zone file. Review before using in production.        │
+  │                                                                            │
+  │ Zone saved to: example.com.zone                                            │
+  │ Import completed in 8.4s                                                   │
+  └────────────────────────────────────────────────────────────────────────────┘
+
+# Import with TSIG authentication
+onedns zone import example.com --method axfr --tsig-key transfer-key.conf
+  Using TSIG key: hmac-sha256:transfer-key
+  ✅ Zone transfer successful (authenticated)
+
+# Import and export to different format
+onedns zone import example.com --method axfr --format json --output example.json
+onedns zone import example.com --method axfr --format terraform --output example.tf
+```
+
+#### Zone Export Examples
+
+```bash
+# Export existing zone file to JSON
+onedns zone export example.com.zone --format json
+  Output: example.com.json
+  {
+    "zone": "example.com",
+    "ttl": 86400,
+    "soa": {
+      "mname": "ns1.example.com",
+      "rname": "admin.example.com",
+      "serial": 2024123001,
+      "refresh": 86400,
+      "retry": 7200,
+      "expire": 3600000,
+      "minimum": 172800
+    },
+    "records": [
+      { "name": "@", "type": "NS", "ttl": 86400, "value": "ns1.example.com" },
+      { "name": "@", "type": "NS", "ttl": 86400, "value": "ns2.example.com" },
+      { "name": "@", "type": "A", "ttl": 300, "value": "203.0.113.1" },
+      { "name": "www", "type": "A", "ttl": 300, "value": "203.0.113.1" },
+      ...
+    ]
+  }
+
+# Convert BIND zone to Terraform
+onedns zone export example.com.zone --format terraform --output zones.tf
+  Output: zones.tf
+  # Terraform configuration for example.com
+  # Generated by onedns zone export
+
+  resource "aws_route53_zone" "example_com" {
+    name = "example.com"
+  }
+
+  resource "aws_route53_record" "example_com_ns" {
+    zone_id = aws_route53_zone.example_com.zone_id
+    name    = "example.com"
+    type    = "NS"
+    ttl     = "86400"
+    records = [
+      "ns1.example.com",
+      "ns2.example.com",
+    ]
+  }
+
+  resource "aws_route53_record" "example_com_a" {
+    zone_id = aws_route53_zone.example_com.zone_id
+    name    = "example.com"
+    type    = "A"
+    ttl     = "300"
+    records = ["203.0.113.1"]
+  }
+  ...
+
+# Export with DNSSEC records stripped (for migration)
+onedns zone export example.com.zone --format bind --no-dnssec --output example-nosec.zone
+  ✅ Exported 247 records (DNSSEC records removed)
+
+# Export sorted alphabetically
+onedns zone export example.com.zone --format bind --sort --output example-sorted.zone
+```
+
+#### Advanced Import Features
+
+```bash
+# Incremental zone transfer (IXFR)
+onedns zone import example.com --method ixfr --since-serial 2024123001
+  Changes since serial 2024123001:
+  + www.example.com    300  IN  A     203.0.113.10  (added)
+  - www.example.com    300  IN  A     203.0.113.1   (removed)
+  + api.example.com    300  IN  A     203.0.113.20  (added)
+
+  3 changes applied
+  New serial: 2024123002
+
+# Compare live zone with local file
+onedns zone import example.com --method axfr --compare example.com.zone
+  Differences detected:
+
+  Only in live zone:
+    + shop.example.com        A      203.0.113.50
+    + staging.example.com     CNAME  dev.example.com
+
+  Only in local file:
+    - old.example.com         A      203.0.113.99
+
+  Different values:
+    www.example.com
+      Live:  203.0.113.10  (TTL: 300)
+      Local: 203.0.113.1   (TTL: 300)
+
+# Multi-format export
+onedns zone import example.com --export-all
+  Exported to:
+    ✅ example.com.zone      (BIND format)
+    ✅ example.com.json      (JSON format)
+    ✅ example.com.yaml      (YAML format)
+    ✅ example.com.csv       (CSV format)
+    ✅ example.com.tf        (Terraform format)
+```
+
+#### Import Methods Comparison
+
+| Method | Speed | Completeness | Requirements | Use Case |
+|--------|-------|--------------|--------------|----------|
+| **AXFR** | Fast | 100% | Zone transfer allowed | Best option when available |
+| **IXFR** | Fastest | Incremental | Zone transfer allowed | Sync changes only |
+| **NSEC Walk** | Medium | High | DNSSEC with NSEC | When AXFR blocked, DNSSEC zone |
+| **NSEC3 Walk** | Slow | Partial | DNSSEC with NSEC3 | AXFR blocked, hashed NSEC |
+| **Enumerate** | Slow | Variable | None | AXFR blocked, no DNSSEC |
+
+**Smart Auto-Detection Logic:**
+1. Try AXFR first (fastest, most complete)
+2. If AXFR refused, check for DNSSEC:
+   - NSEC → Use NSEC walking
+   - NSEC3 → Use enumeration + partial NSEC3
+3. If no DNSSEC → Use intelligent enumeration
+4. Combine multiple techniques for best coverage
+
+---
+
+### 2.9 DNS Science Integration - `onedns science`
 
 Full integration with dnsscience.io platform.
 
 ```bash
-dnsgo science <subcommand> [flags]
+onedns science <subcommand> [flags]
 
 Subcommands:
   key         Manage API key
@@ -1072,7 +1362,7 @@ Subcommands:
   export      Export scan data
 
 Flags:
-  --api-key <key>     API key (or use 'dnsgo science key set')
+  --api-key <key>     API key (or use 'onedns science key set')
   --format <fmt>      Output format: text, json, csv
 ```
 
@@ -1080,7 +1370,7 @@ Flags:
 
 ```bash
 # Configure API key
-dnsgo science key set ./dnsscience-api-key.json
+onedns science key set ./dnsscience-api-key.json
   Output:
   ✅ API key configured successfully
   Endpoint: https://api.dnsscience.io
@@ -1088,7 +1378,7 @@ dnsgo science key set ./dnsscience-api-key.json
   Permissions: scan, read, analytics
 
 # Comprehensive domain scan
-dnsgo science scan google.com --level verbose
+onedns science scan google.com --level verbose
   Output:
   ┌─ DNS Science Comprehensive Scan: google.com ───────────────────────────────┐
   │                                                                            │
@@ -1160,7 +1450,7 @@ dnsgo science scan google.com --level verbose
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Get historical scan data
-dnsgo science history google.com --limit 10
+onedns science history google.com --limit 10
   Output:
   ┌─ Scan History: google.com ─────────────────────────────────────────────────┐
   │                                                                            │
@@ -1185,7 +1475,7 @@ dnsgo science history google.com --limit 10
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Compare with historical baseline
-dnsgo science compare google.com --baseline "2024-11-01"
+onedns science compare google.com --baseline "2024-11-01"
   Output:
   ┌─ Security Drift Analysis: google.com ──────────────────────────────────────┐
   │                                                                            │
@@ -1218,7 +1508,7 @@ dnsgo science compare google.com --baseline "2024-11-01"
   └────────────────────────────────────────────────────────────────────────────┘
 
 # Search domains by criteria
-dnsgo science search --no-dnssec --has-dmarc --limit 100
+onedns science search --no-dnssec --has-dmarc --limit 100
   Output:
   Domains without DNSSEC but with DMARC (showing 100 of 12,453):
 
@@ -1230,7 +1520,7 @@ dnsgo science search --no-dnssec --has-dmarc --limit 100
   ...
 
 # Analytics dashboard
-dnsgo science analytics --period 30d
+onedns science analytics --period 30d
   Output:
   ┌─ DNS Science Analytics (Last 30 Days) ─────────────────────────────────────┐
   │                                                                            │
@@ -1293,7 +1583,7 @@ dnsgo science analytics --period 30d
     "internal": ["192.168.1.53"]
   },
   "dnsscience": {
-    "api_key_file": "~/.config/adsdnsgo/dnsscience-key.json",
+    "api_key_file": "~/.config/onedns/dnsscience-key.json",
     "endpoint": "https://api.dnsscience.io",
     "auto_submit": false
   },
@@ -1301,13 +1591,13 @@ dnsgo science analytics --period 30d
     "infoblox": {
       "url": "https://infoblox.example.com",
       "username": "api-user",
-      "password_file": "~/.config/adsdnsgo/infoblox-pass",
+      "password_file": "~/.config/onedns/infoblox-pass",
       "version": "2.11",
       "default_view": "default"
     },
     "bluecat": {
       "url": "https://bluecat.example.com",
-      "api_key_file": "~/.config/adsdnsgo/bluecat-key"
+      "api_key_file": "~/.config/onedns/bluecat-key"
     }
   },
   "dkim_selectors": [
@@ -1335,20 +1625,20 @@ dnsgo science analytics --period 30d
 
 ```bash
 # Core settings
-ADSDNSGO_CONFIG=/path/to/config.json
-ADSDNSGO_OUTPUT_LEVEL=verbose
-ADSDNSGO_COLOR=true
+ONEDNS_CONFIG=/path/to/config.json
+ONEDNS_OUTPUT_LEVEL=verbose
+ONEDNS_COLOR=true
 
 # Resolver settings
-ADSDNSGO_RESOLVER=8.8.8.8
-ADSDNSGO_TIMEOUT=10s
+ONEDNS_RESOLVER=8.8.8.8
+ONEDNS_TIMEOUT=10s
 
 # API keys
-ADSDNSGO_DNSSCIENCE_KEY=<api-key>
-ADSDNSGO_INFOBLOX_URL=https://infoblox.example.com
-ADSDNSGO_INFOBLOX_USER=admin
-ADSDNSGO_INFOBLOX_PASS=<password>
-ADSDNSGO_BLUECAT_KEY=<api-key>
+ONEDNS_DNSSCIENCE_KEY=<api-key>
+ONEDNS_INFOBLOX_URL=https://infoblox.example.com
+ONEDNS_INFOBLOX_USER=admin
+ONEDNS_INFOBLOX_PASS=<password>
+ONEDNS_BLUECAT_KEY=<api-key>
 ```
 
 ---
@@ -1485,40 +1775,40 @@ Byte-by-byte annotation      ❌     ❌     ❌      ❌       ✅
 - Configuration system
 
 ### Phase 2: Query & Debug Commands
-- `dnsgo query` with all levels
-- `dnsgo debug trace`
-- `dnsgo debug compare`
+- `onedns query` with all levels
+- `onedns debug trace`
+- `onedns debug compare`
 - Resolver comparison
 - Propagation checking
 
 ### Phase 3: Packet Forging & Keys
-- `dnsgo mkpacket` all packet types
-- `dnsgo makekey` DNSSEC key generation
+- `onedns mkpacket` all packet types
+- `onedns makekey` DNSSEC key generation
 - TSIG support
 - DNS UPDATE construction
 
 ### Phase 4: Email Security Suite
-- `dnsgo spf` full implementation
-- `dnsgo dkim` with selector discovery
-- `dnsgo dmarc` analysis
-- `dnsgo txt` validation
+- `onedns spf` full implementation
+- `onedns dkim` with selector discovery
+- `onedns dmarc` analysis
+- `onedns txt` validation
 
 ### Phase 5: dnsscience.io Integration
 - API client implementation
-- `dnsgo science scan`
-- `dnsgo science history`
-- `dnsgo science compare`
-- `dnsgo science analytics`
+- `onedns science scan`
+- `onedns science history`
+- `onedns science compare`
+- `onedns science analytics`
 
 ### Phase 6: Appliance Integration
 - Infoblox WAPI client
 - BlueCat API client
-- `dnsgo appliance` commands
+- `onedns appliance` commands
 - Record synchronization
 
 ### Phase 7: Zone Validation
-- `dnsgo validate zone`
-- `dnsgo validate config`
+- `onedns validate zone`
+- `onedns validate config`
 - Platform-specific validators (BIND, PowerDNS, etc.)
 - Auto-fix capabilities
 

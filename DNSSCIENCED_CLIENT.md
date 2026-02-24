@@ -1,8 +1,8 @@
-# adsdnsgo - Official DNS Client for DNSScienced
+# onedns - Official DNS Client for DNSScienced
 
 ## Overview
 
-`adsdnsgo` (branded as `dnsgo`) is the official command-line DNS client for the DNSScienced DNS server platform. It provides advanced querying, debugging, and management capabilities specifically designed to work seamlessly with DNSScienced servers.
+`onedns` (branded as `onedns`) is the official command-line DNS client for the DNSScienced DNS server platform. It provides advanced querying, debugging, and management capabilities specifically designed to work seamlessly with DNSScienced servers.
 
 ---
 
@@ -30,7 +30,7 @@
 │  │                        CLIENT COMPONENT                              │   │
 │  │                                                                      │   │
 │  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │                      dnsgo (adsdnsgo)                        │   │   │
+│  │  │                      onedns (onedns)                        │   │   │
 │  │  │                                                              │   │   │
 │  │  │  • DNS Query Engine            • DNSSEC Debugging           │   │   │
 │  │  │  • Zone Validation             • Email Security Suite       │   │   │
@@ -62,36 +62,36 @@
 
 ```bash
 # Connect to DNSScienced server
-dnsgo server connect <host> [--port 8443] [--api-key KEY]
+onedns server connect <host> [--port 8443] [--api-key KEY]
 
 # Server status
-dnsgo server status
-dnsgo server stats [--period 5m|1h|24h]
-dnsgo server health
+onedns server status
+onedns server stats [--period 5m|1h|24h]
+onedns server health
 
 # Zone management
-dnsgo server zones list
-dnsgo server zones show <zone>
-dnsgo server zones reload <zone>
-dnsgo server zones notify <zone>
+onedns server zones list
+onedns server zones show <zone>
+onedns server zones reload <zone>
+onedns server zones notify <zone>
 
 # Cache management
-dnsgo server cache stats
-dnsgo server cache lookup <domain> [type]
-dnsgo server cache flush [domain]
+onedns server cache stats
+onedns server cache lookup <domain> [type]
+onedns server cache flush [domain]
 
 # DNSSEC management
-dnsgo server dnssec status <zone>
-dnsgo server dnssec ds <zone>
-dnsgo server dnssec rollover <zone> [ksk|zsk]
+onedns server dnssec status <zone>
+onedns server dnssec ds <zone>
+onedns server dnssec rollover <zone> [ksk|zsk]
 
 # Configuration
-dnsgo server config show [section]
-dnsgo server config reload
+onedns server config show [section]
+onedns server config reload
 
 # License information
-dnsgo server license info
-dnsgo server license features
+onedns server license info
+onedns server license features
 ```
 
 ### Configuration File
@@ -112,22 +112,22 @@ dnsgo server license features
       "primary": {
         "host": "dns-auth1.example.com",
         "port": 8443,
-        "api_key_file": "~/.config/adsdnsgo/dnsscienced-api-key.json",
+        "api_key_file": "~/.config/onedns/dnsscienced-api-key.json",
         "tls": {
           "verify": true,
-          "ca_cert": "~/.config/adsdnsgo/ca.crt"
+          "ca_cert": "~/.config/onedns/ca.crt"
         }
       },
       "secondary": {
         "host": "dns-auth2.example.com",
         "port": 8443,
-        "api_key_file": "~/.config/adsdnsgo/dnsscienced-api-key.json"
+        "api_key_file": "~/.config/onedns/dnsscienced-api-key.json"
       }
     },
     "default_server": "primary"
   },
   "dnsscience": {
-    "api_key_file": "~/.config/adsdnsgo/dnsscience-key.json",
+    "api_key_file": "~/.config/onedns/dnsscience-key.json",
     "embedded_dns": {
       "enabled": false,
       "servers": [
@@ -141,11 +141,11 @@ dnsgo server license features
   "appliances": {
     "infoblox": {
       "url": "https://infoblox.example.com/wapi/v2.12",
-      "credentials_file": "~/.config/adsdnsgo/infoblox.json"
+      "credentials_file": "~/.config/onedns/infoblox.json"
     },
     "bluecat": {
       "url": "https://bluecat.example.com/api/v2",
-      "credentials_file": "~/.config/adsdnsgo/bluecat.json"
+      "credentials_file": "~/.config/onedns/bluecat.json"
     }
   }
 }
@@ -158,10 +158,10 @@ dnsgo server license features
 ### Full Command Reference
 
 ```
-dnsgo - After Dark Systems DNS GO! (Official DNSScienced Client)
+onedns - After Dark Systems DNS GO! (Official DNSScienced Client)
 
 QUERY COMMANDS
-  dnsgo query <target> [type] [options]
+  onedns query <target> [type] [options]
     Query DNS records with configurable verbosity
     Types: A, AAAA, CNAME, MX, TXT, NS, SOA, PTR, SRV, DNSKEY, DS, RRSIG, NSEC, NSEC3, CAA, HTTPS, SVCB, ANY
     Options:
@@ -174,62 +174,62 @@ QUERY COMMANDS
       --embedded-dns     Use dnsscience.io DNS caches
 
 DEBUG COMMANDS
-  dnsgo debug trace <target>
+  onedns debug trace <target>
     Trace resolution from root servers
 
-  dnsgo debug compare <target> --resolvers <list>
+  onedns debug compare <target> --resolvers <list>
     Compare results across multiple resolvers
 
-  dnsgo debug propagation <target> --resolvers <list>
+  onedns debug propagation <target> --resolvers <list>
     Check propagation status across nameservers
 
-  dnsgo debug delegation <target>
+  onedns debug delegation <target>
     Analyze delegation chain
 
-  dnsgo debug latency <target> [--server <server>] [--count <n>]
+  onedns debug latency <target> [--server <server>] [--count <n>]
     Measure query latency
 
-  dnsgo debug glue <zone>
+  onedns debug glue <zone>
     Check glue record consistency
 
-  dnsgo debug authority <zone>
+  onedns debug authority <zone>
     Verify authoritative server configuration
 
 PACKET COMMANDS
-  dnsgo mkpacket query <name> <type> [options]
+  onedns mkpacket query <name> <type> [options]
     Create DNS query packet
 
-  dnsgo mkpacket response <query-file> [options]
+  onedns mkpacket response <query-file> [options]
     Create DNS response packet
 
-  dnsgo mkpacket update <zone> [options]
+  onedns mkpacket update <zone> [options]
     Create DNS UPDATE packet (RFC 2136)
 
-  dnsgo mkpacket notify <zone> [options]
+  onedns mkpacket notify <zone> [options]
     Create DNS NOTIFY packet
 
-  dnsgo parsepacket <file|hex>
+  onedns parsepacket <file|hex>
     Parse and display DNS packet
 
 DNSSEC COMMANDS
-  dnsgo makekey [options]
+  onedns makekey [options]
     Generate DNSSEC key pair
     Options:
       --algorithm        ECDSAP256SHA256 (default), ED25519, RSASHA256, etc.
       --type             ksk|zsk
       --zone             Zone name
 
-  dnsgo dnssec validate <domain>
+  onedns dnssec validate <domain>
     Validate DNSSEC chain of trust
 
-  dnsgo dnssec chain <domain>
+  onedns dnssec chain <domain>
     Display full DNSSEC chain
 
-  dnsgo dnssec ds <zone> --key <keyfile>
+  onedns dnssec ds <zone> --key <keyfile>
     Generate DS record from DNSKEY
 
 EMAIL SECURITY COMMANDS
-  dnsgo spf <subcommand> <domain> [options]
+  onedns spf <subcommand> <domain> [options]
     SPF record tools
     Subcommands:
       get       - Retrieve and parse SPF record
@@ -238,7 +238,7 @@ EMAIL SECURITY COMMANDS
       make      - Generate SPF record interactively
       flatten   - Flatten SPF includes to IPs
 
-  dnsgo dkim <subcommand> <domain> [options]
+  onedns dkim <subcommand> <domain> [options]
     DKIM tools
     Subcommands:
       get       - Retrieve DKIM public key
@@ -246,97 +246,97 @@ EMAIL SECURITY COMMANDS
       verify    - Verify DKIM signature
       makekey   - Generate DKIM keypair
 
-  dnsgo dmarc <subcommand> <domain> [options]
+  onedns dmarc <subcommand> <domain> [options]
     DMARC tools
     Subcommands:
       get       - Retrieve and parse DMARC policy
       validate  - Check DMARC syntax
       make      - Generate DMARC record interactively
 
-  dnsgo txt <host> <subcommand>
+  onedns txt <host> <subcommand>
     TXT record tools
     Subcommands:
       get       - Retrieve TXT records
       validate  - Validate TXT record format
 
 VALIDATION COMMANDS
-  dnsgo validate zone <path> [options]
+  onedns validate zone <path> [options]
     Validate zone file
     Options:
       --platform         bind|powerdns|nsd|djbdns|dnsscienced
       --check-ns         Verify NS record reachability
       --check-dnssec     Verify DNSSEC configuration
 
-  dnsgo validate config <path> [options]
+  onedns validate config <path> [options]
     Validate DNS server configuration
     Options:
       --platform         bind|powerdns|unbound|nsd|dnsscienced
 
-  dnsgo convert zone <input> <output> [options]
+  onedns convert zone <input> <output> [options]
     Convert zone file format
     Options:
       --from             Source format
       --to               Target format (dnszone for DNSScienced)
 
 DDI APPLIANCE COMMANDS
-  dnsgo appliance set <type> <options>
+  onedns appliance set <type> <options>
     Configure DDI appliance connection
     Types: infoblox, bluecat
 
-  dnsgo appliance get <type> <resource>
+  onedns appliance get <type> <resource>
     Retrieve data from DDI appliance
 
-  dnsgo appliance test <type>
+  onedns appliance test <type>
     Test DDI appliance connectivity
 
-  dnsgo appliance query <type> <query>
+  onedns appliance query <type> <query>
     Query DDI appliance
 
 DNSSCIENCED SERVER COMMANDS
-  dnsgo server connect <host> [options]
+  onedns server connect <host> [options]
     Connect to DNSScienced management API
 
-  dnsgo server status
+  onedns server status
     Show server status and health
 
-  dnsgo server stats [--period <period>]
+  onedns server stats [--period <period>]
     Show server statistics
 
-  dnsgo server zones <subcommand>
+  onedns server zones <subcommand>
     Zone management commands
 
-  dnsgo server cache <subcommand>
+  onedns server cache <subcommand>
     Cache management commands
 
-  dnsgo server dnssec <subcommand>
+  onedns server dnssec <subcommand>
     DNSSEC management commands
 
-  dnsgo server config <subcommand>
+  onedns server config <subcommand>
     Configuration commands
 
-  dnsgo server license <subcommand>
+  onedns server license <subcommand>
     License information commands
 
 DNSSCIENCE.IO COMMANDS
-  dnsgo science key set <json-file>
+  onedns science key set <json-file>
     Set dnsscience.io API key
 
-  dnsgo science scan <domain> [options]
+  onedns science scan <domain> [options]
     Run comprehensive DNS scan
 
-  dnsgo science history <domain> [options]
+  onedns science history <domain> [options]
     View historical scan data
 
-  dnsgo science compare <domain1> <domain2>
+  onedns science compare <domain1> <domain2>
     Compare DNS configurations
 
-  dnsgo science search <query>
+  onedns science search <query>
     Search dnsscience.io database
 
-  dnsgo science analytics [options]
+  onedns science analytics [options]
     View DNS analytics
 
-  dnsgo science drift <domain> [--period <days>]
+  onedns science drift <domain> [--period <days>]
     Detect DNS configuration drift
 
 GLOBAL FLAGS
@@ -357,13 +357,13 @@ GLOBAL FLAGS
 
 ```bash
 # Connect to server
-$ dnsgo server connect dns-auth1.example.com --api-key ~/.config/adsdnsgo/api-key.json
+$ onedns server connect dns-auth1.example.com --api-key ~/.config/onedns/api-key.json
 Connected to dns-auth1.example.com (DNSScienced v1.2.3)
 License: Enterprise (expires: 2025-01-01)
 Features: 45 enabled
 
 # Check server status
-$ dnsgo server status
+$ onedns server status
 Server: dns-auth1.example.com
 Status: healthy
 Uptime: 15d 4h 32m
@@ -372,7 +372,7 @@ Cache hit rate: 92.4%
 Zones loaded: 150
 
 # View zone details
-$ dnsgo server zones show example.com
+$ onedns server zones show example.com
 Zone: example.com
 Type: primary
 Serial: 2024011503
@@ -381,14 +381,14 @@ DNSSEC: enabled (ECDSAP256SHA256)
 Last modified: 2024-01-15T10:30:00Z
 
 # Reload zone
-$ dnsgo server zones reload example.com
+$ onedns server zones reload example.com
 Zone example.com reloaded
 Old serial: 2024011503
 New serial: 2024011504
 Records: 155
 
 # DNSSEC key rollover
-$ dnsgo server dnssec rollover example.com zsk
+$ onedns server dnssec rollover example.com zsk
 Initiating ZSK rollover for example.com
 New key ID: 67892
 Timeline:
@@ -402,7 +402,7 @@ Timeline:
 
 ```bash
 # Query with full DNSSEC validation trace
-$ dnsgo query example.com A --level verbose --dnssec
+$ onedns query example.com A --level verbose --dnssec
 Query: example.com. IN A
 Server: 8.8.8.8:53 (UDP)
 
@@ -417,7 +417,7 @@ example.com.    300    IN    A    93.184.216.34
 Response time: 12.3ms
 
 # Compare across resolvers
-$ dnsgo debug compare example.com A --resolvers 8.8.8.8,1.1.1.1,9.9.9.9
+$ onedns debug compare example.com A --resolvers 8.8.8.8,1.1.1.1,9.9.9.9
 ┌─────────────┬──────────────────┬─────────┬────────┐
 │ Resolver    │ Answer           │ TTL     │ Time   │
 ├─────────────┼──────────────────┼─────────┼────────┤
@@ -428,7 +428,7 @@ $ dnsgo debug compare example.com A --resolvers 8.8.8.8,1.1.1.1,9.9.9.9
 All resolvers agree ✓
 
 # Use DNSScienced embedded DNS
-$ dnsgo query suspicious-domain.xyz A --embedded-dns --level verbose
+$ onedns query suspicious-domain.xyz A --embedded-dns --level verbose
 Query via: cache01.dnsscience.io (dnsscience.io embedded DNS)
 
 ;; ANSWER SECTION:
@@ -445,7 +445,7 @@ Threat Level: HIGH
 
 ```bash
 # Validate BIND zone file
-$ dnsgo validate zone /etc/bind/zones/example.com.zone --platform bind
+$ onedns validate zone /etc/bind/zones/example.com.zone --platform bind
 Validating: /etc/bind/zones/example.com.zone
 Platform: BIND
 
@@ -460,7 +460,7 @@ Results:
 Zone is valid with 1 warning
 
 # Convert BIND zone to DNSScienced format
-$ dnsgo convert zone example.com.zone example.com.dnszone --from bind --to dnsscienced
+$ onedns convert zone example.com.zone example.com.dnszone --from bind --to dnsscienced
 Converting zone file...
 Input: BIND format (example.com.zone)
 Output: DNSScienced native format (example.com.dnszone)
@@ -473,7 +473,7 @@ Output written to: example.com.dnszone
 
 ```bash
 # Full email security audit
-$ dnsgo spf get google.com --level verbose
+$ onedns spf get google.com --level verbose
 SPF Record for google.com:
 v=spf1 include:_spf.google.com ~all
 
@@ -489,7 +489,7 @@ Analysis:
   ✓ Uses softfail (~all) - recommended
   ⚠ Large IP range (36+ million IPs)
 
-$ dnsgo dmarc get google.com
+$ onedns dmarc get google.com
 DMARC Policy for google.com:
 v=DMARC1; p=reject; rua=mailto:mailauth-reports@google.com
 
@@ -517,27 +517,27 @@ make client
 
 # Install
 sudo make install
-# Installs: dnsscience-authd, dnsscience-cached, dnssciencectl, dnsgo
+# Installs: dnsscience-authd, dnsscience-cached, dnssciencectl, onedns
 ```
 
 ### Standalone Installation
 
 ```bash
 # Go install
-go install github.com/afterdarksystems/adsdnsgo/cmd/dnsgo@latest
+go install github.com/afterdarksystems/onedns/cmd/onedns@latest
 
 # Or build from source
-git clone https://github.com/afterdarksystems/adsdnsgo.git
-cd adsdnsgo
-go build -o dnsgo ./cmd/dnsgo
-sudo mv dnsgo /usr/local/bin/
+git clone https://github.com/afterdarksystems/onedns.git
+cd onedns
+go build -o onedns ./cmd/onedns
+sudo mv onedns /usr/local/bin/
 ```
 
 ---
 
 ## Version Compatibility
 
-| dnsgo Version | DNSScienced Version | Features |
+| onedns Version | DNSScienced Version | Features |
 |---------------|---------------------|----------|
 | 1.0.x         | 1.0.x               | Basic server management |
 | 1.1.x         | 1.1.x               | DNSSEC key management |
@@ -550,7 +550,7 @@ sudo mv dnsgo /usr/local/bin/
 
 See the main [DNSScienced repository](https://github.com/dnsscience/dnsscienced) for contribution guidelines.
 
-adsdnsgo is developed as part of the DNSScienced ecosystem by After Dark Systems.
+onedns is developed as part of the DNSScienced ecosystem by After Dark Systems.
 
 ---
 

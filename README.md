@@ -1,12 +1,12 @@
-# adsdnsgo - After Dark Systems DNS GO!
+# onedns - One DNS Tool for Everything
 
-**The Official CLI Client for DNSScienced**
+**The Ultimate DNS CLI - Query, Debug, Secure, Manage**
 
-The world's most advanced, verbose, and integrated DNS debugging tool.
+One DNS tool to rule them all. The world's most advanced, verbose, and integrated DNS debugging tool.
 
 ## Overview
 
-`adsdnsgo` (command: `dnsgo`) is a next-generation DNS CLI that combines the power of `dig` and `drill` with:
+`onedns` is a next-generation DNS CLI that combines the power of `dig` and `drill` with:
 - **DNSScienced Integration** - Full server management and control
 - **dnsscience.io Platform** - Internet-scale DNS security research
 - **Email Security Suite** - SPF, DKIM, DMARC analysis
@@ -22,7 +22,8 @@ Part of the [DNSScienced](https://github.com/dnsscience/dnsscienced) ecosystem.
 - **5 Verbosity Levels** - From one-line answers to wire-level packet dumps
 - **Full DNSSEC Support** - Validation, chain tracing, key generation, rollover management
 - **Email Security Suite** - SPF, DKIM, DMARC analysis and generation
-- **Zone Validation & Conversion** - Support for BIND, PowerDNS, Unbound, NSD, djbdns, DNSScienced native format
+- **Zone Import/Export** - AXFR, IXFR, NSEC walking, intelligent enumeration (Cloudflare-style)
+- **Zone Validation** - Support for BIND, PowerDNS, Unbound, NSD, djbdns, DNSScienced native format
 - **DNS Appliance Integration** - Infoblox WAPI, BlueCat API support
 - **dnsscience.io Integration** - Full API access for internet-scale research
 
@@ -30,36 +31,39 @@ Part of the [DNSScienced](https://github.com/dnsscience/dnsscienced) ecosystem.
 
 ```
 # DNS Queries
-dnsgo query <target> [type] [--level short|long|detail|verbose|debug] [--embedded-dns|-ed]
-dnsgo debug <trace|compare|propagation|delegation|latency>
+onedns query <target> [type] [--level short|long|detail|verbose|debug] [--embedded-dns|-ed]
+onedns debug <trace|compare|propagation|delegation|latency>
 
 # DNSScienced Server Management
-dnsgo server connect <host> [--api-key KEY]
-dnsgo server status|stats|health
-dnsgo server zones <list|show|reload|notify> [zone]
-dnsgo server cache <stats|flush|lookup> [domain]
-dnsgo server dnssec <status|ds|rollover> <zone>
-dnsgo server license <info|features>
+onedns server connect <host> [--api-key KEY]
+onedns server status|stats|health
+onedns server zones <list|show|reload|notify> [zone]
+onedns server cache <stats|flush|lookup> [domain]
+onedns server dnssec <status|ds|rollover> <zone>
+onedns server license <info|features>
 
 # DNSSEC & Packet Tools
-dnsgo mkpacket <query|response|update|notify>
-dnsgo makekey [--algorithm ECDSAP256SHA256|ED25519|...]
+onedns mkpacket <query|response|update|notify>
+onedns makekey [--algorithm ECDSAP256SHA256|ED25519|...]
 
 # Email Security
-dnsgo spf <get|validate|test|make|flatten> <domain>
-dnsgo dkim <get|discover|verify|makekey> <domain>
-dnsgo dmarc <get|validate|make> <domain>
-dnsgo txt <host> <get|validate>
+onedns spf <get|validate|test|make|flatten> <domain>
+onedns dkim <get|discover|verify|makekey> <domain>
+onedns dmarc <get|validate|make> <domain>
+onedns txt <host> <get|validate>
 
-# Zone Validation & Conversion
-dnsgo validate <zone|config> <path> [--platform bind|powerdns|unbound|nsd|dnsscienced]
-dnsgo convert zone <input> <output> [--from bind|djbdns] [--to dnsscienced]
+# Zone Import/Export
+onedns zone import <domain> [--method axfr|ixfr|walk|enumerate]
+onedns zone export <domain> [--format bind|json|yaml|csv|terraform]
+
+# Zone Validation
+onedns validate <zone|config> <path> [--platform bind|powerdns|unbound|nsd|dnsscienced]
 
 # DDI Appliances
-dnsgo appliance <set|get|test|query> <infoblox|bluecat>
+onedns appliance <set|get|test|query> <infoblox|bluecat>
 
 # dnsscience.io Integration
-dnsgo science <scan|history|compare|search|analytics|drift> [options]
+onedns science <scan|history|compare|search|analytics|drift> [options]
 ```
 
 ## Output Levels
@@ -82,28 +86,40 @@ dnsgo science <scan|history|compare|search|analytics|drift> [options]
 
 ```bash
 # Basic query
-dnsgo query example.com
+onedns query example.com
 
 # Full debug output
-dnsgo query example.com mx --level debug
+onedns query example.com mx --level debug
 
 # Trace resolution from root
-dnsgo debug trace example.com
+onedns debug trace example.com
 
 # Compare resolvers
-dnsgo debug compare example.com --resolvers 8.8.8.8,1.1.1.1,9.9.9.9
+onedns debug compare example.com --resolvers 8.8.8.8,1.1.1.1,9.9.9.9
 
 # Use dnsscience.io embedded DNS caches
-dnsgo query example.com mx --embedded-dns
+onedns query example.com mx --embedded-dns
 
 # Analyze SPF record
-dnsgo spf get google.com --level verbose
+onedns spf get google.com --level verbose
 
 # Scan via dnsscience.io
-dnsgo science scan example.com
+onedns science scan example.com
+
+# Import zone via AXFR transfer
+onedns zone import example.com --method axfr
+
+# Import zone via NSEC walking (when AXFR blocked)
+onedns zone import example.com --method walk
+
+# Import with intelligent enumeration (Cloudflare-style)
+onedns zone import example.com --method enumerate
+
+# Export zone to different formats
+onedns zone export example.com.zone --format terraform
 
 # Validate zone file
-dnsgo validate zone /etc/bind/zones/example.com.zone --platform bind
+onedns validate zone /etc/bind/zones/example.com.zone --platform bind
 ```
 
 ## Installation
@@ -113,20 +129,20 @@ See [INSTALL.md](INSTALL.md) for detailed installation instructions.
 ### Quick Install (Go)
 
 ```bash
-go install github.com/afterdarksystems/adsdnsgo@latest
+go install github.com/onedns/onedns@latest
 ```
 
 ### Build from Source
 
 ```bash
-git clone https://github.com/afterdarksystems/adsdnsgo.git
-cd adsdnsgo
-go build -o dnsgo ./cmd/adsdnsgo
+git clone https://github.com/onedns/onedns.git
+cd onedns
+go build -o onedns ./cmd/onedns
 ```
 
 ## Configuration
 
-Create `~/.config/adsdnsgo/config.json`:
+Create `~/.config/onedns/config.json`:
 
 ```json
 {
@@ -139,7 +155,7 @@ Create `~/.config/adsdnsgo/config.json`:
     "default": ["8.8.8.8", "1.1.1.1"]
   },
   "dnsscience": {
-    "api_key_file": "~/.config/adsdnsgo/dnsscience-key.json"
+    "api_key_file": "~/.config/onedns/dnsscience-key.json"
   }
 }
 ```
@@ -150,21 +166,21 @@ Manage DNSScienced servers directly from the command line:
 
 ```bash
 # Connect to your DNSScienced server
-dnsgo server connect dns.example.com --api-key ~/.config/adsdnsgo/api-key.json
+onedns server connect dns.example.com --api-key ~/.config/onedns/api-key.json
 
 # Check server status
-dnsgo server status
+onedns server status
 # Output: Server: dns.example.com | Status: healthy | QPS: 45,231 | Cache hit: 92%
 
 # Manage zones
-dnsgo server zones list
-dnsgo server zones reload example.com
+onedns server zones list
+onedns server zones reload example.com
 
 # DNSSEC key rollover
-dnsgo server dnssec rollover example.com zsk
+onedns server dnssec rollover example.com zsk
 
 # View license info
-dnsgo server license info
+onedns server license info
 ```
 
 See [DNSSCIENCED_CLIENT.md](DNSSCIENCED_CLIENT.md) for full DNSScienced integration documentation.
@@ -181,16 +197,16 @@ Connect to the dnsscience.io platform for:
 
 ```bash
 # Set API key
-dnsgo science key set ./api-key.json
+onedns science key set ./api-key.json
 
 # Run comprehensive scan
-dnsgo science scan example.com --level verbose
+onedns science scan example.com --level verbose
 
 # View historical data
-dnsgo science history example.com --limit 30
+onedns science history example.com --limit 30
 
 # Get analytics
-dnsgo science analytics --period 30d
+onedns science analytics --period 30d
 ```
 
 ## Supported Platforms
@@ -210,7 +226,7 @@ dnsgo science analytics --period 30d
 
 - [INSTALL.md](INSTALL.md) - Installation guide
 - [DNSSCIENCED_CLIENT.md](DNSSCIENCED_CLIENT.md) - DNSScienced server integration guide
-- [TICKET-001-ADSDNSGO-DESIGN.md](TICKET-001-ADSDNSGO-DESIGN.md) - Full technical design
+- [TICKET-001-ONEDNS-DESIGN.md](TICKET-001-ONEDNS-DESIGN.md) - Full technical design
 
 ## License
 

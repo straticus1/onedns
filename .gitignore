@@ -1,6 +1,5 @@
 # Binaries
-dnsgo
-adsdnsgo
+onedns
 *.exe
 *.dll
 *.so
